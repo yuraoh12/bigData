@@ -1,0 +1,262 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Untitled9.ipynb",
+      "provenance": [],
+      "collapsed_sections": [],
+      "authorship_tag": "ABX9TyNBijCT5rQitBRCRYI4SBgh",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/chacha86/bigData1/blob/main/%EB%B3%80%EC%88%98%EC%99%80%20%EC%9E%90%EB%A3%8C%ED%98%95\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**파이썬 1일차**\n",
+        "\n",
+        "\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "Ge72_WRYptX7"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# 출력\n",
+        "print(10)\n",
+        "print(\"10\")\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "v63ZcX3a2IlG",
+        "outputId": "18592424-5f81-4ca5-c107-60ff6dfe4277"
+      },
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "10\n",
+            "10\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "20"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 7
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# 자료형 -> 반드시 마스터\n",
+        "10 + 10 # 숫자\n",
+        "\"10\" + \"10\" # 문자열\n",
+        "3.14 # 실수\n",
+        "\n",
+        "# 숫자 자료형에서의 연산\n",
+        "20 - 10 # 빼기\n",
+        "\n",
+        "5 * 4 # 곱하기\n",
+        "\n",
+        "10 / 3 # 나누기(실수)\n",
+        "\n",
+        "10 // 3 # 나누기(정수)\n",
+        "\n",
+        "2 ** 10 # 제곱\n",
+        "\n",
+        "10 % 3 # 나머지"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "oLy35gE73fbK",
+        "outputId": "8894ebc9-5f08-41c6-b508-b3cf6066a15e"
+      },
+      "execution_count": 18,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "1"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 18
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# 변수\n",
+        "# 자료를 저장\n",
+        "# 하나의 값을 저장하고 일관되게 사용.\n",
+        "\n",
+        "age = 21 # 왼쪽 변수, 오른쪽 값(자료). 위치를 반드시 지켜주어야 함.\n",
+        "\n",
+        "print(age)\n",
+        "print(age)\n",
+        "print(age)\n",
+        "\n",
+        "\n",
+        "num1 = 100\n",
+        "num2 = 200\n",
+        "\n",
+        "num1 + num2\n",
+        "num1 = num2\n",
+        "\n",
+        "\n",
+        "# 존재하는 모든 자료형을 변수에 저장 가능\n",
+        "my_string = \"hello\"\n",
+        "my_string\n",
+        "\n",
+        "my_float = 3.14\n",
+        "my_float\n",
+        "\n",
+        "\n",
+        "\n",
+        "# float -> 실수\n",
+        "type(my_float)\n",
+        "\n",
+        "# str -> 문자열\n",
+        "type(my_string)\n",
+        "\n",
+        "# int -> 정수\n",
+        "type(num1)\n",
+        "\n",
+        "a = \"aaa\"\n",
+        "\n",
+        "\n",
+        "a + 10\n",
+        "# 숫자 + 문자 불가능한것인가?\n",
+        "# 일반적으로 불가능하나, 문자를 숫자로 바꾸거나, 숫자를 문자로 바꾸면 가능(형변환)\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 307
+        },
+        "id": "sM0M4tao3s2Y",
+        "outputId": "73846eef-a212-446e-f7fd-36690e9c7d7f"
+      },
+      "execution_count": 41,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "21\n",
+            "21\n",
+            "21\n"
+          ]
+        },
+        {
+          "output_type": "error",
+          "ename": "TypeError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mTypeError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-41-c953bd14904a>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m()\u001b[0m\n\u001b[1;32m     34\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     35\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 36\u001b[0;31m \u001b[0ma\u001b[0m \u001b[0;34m+\u001b[0m \u001b[0;36m10\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     37\u001b[0m \u001b[0;31m# 숫자 + 문자 불가능한것인가?\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     38\u001b[0m \u001b[0;31m# 일반적으로 불가능하나, 문자를 숫자로 바꾸거나, 숫자를 문자로 바꾸면 가능(형변환)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mTypeError\u001b[0m: can only concatenate str (not \"int\") to str"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# 형변환\n",
+        "str(10) # 숫자10을 문자 \"10\"으로 변환\n",
+        "int(\"100\") # 문자 \"100\"을 숫자 100으로 변환"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "YeA7wbhY9a9i",
+        "outputId": "f9a65a27-1546-47c0-f25d-719a71c3fb34"
+      },
+      "execution_count": 38,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "100"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 38
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# 형변환을 이용해 연산해보기\n",
+        "s = \"hello\"\n",
+        "n = 10\n",
+        "\n",
+        "s + str(n)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 36
+        },
+        "id": "X2Vj3a4J95yb",
+        "outputId": "58c14291-ec70-4835-b662-02e9892fc214"
+      },
+      "execution_count": 40,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "'hello10'"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "string"
+            }
+          },
+          "metadata": {},
+          "execution_count": 40
+        }
+      ]
+    }
+  ]
+}
