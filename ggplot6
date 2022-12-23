@@ -1,0 +1,43 @@
+library(dplyr)
+library(ggplot2)
+library(gt)
+
+mid <- c('철', '민', '지', '현', '혜', '준', '명')
+last <- c('수', '연', '혜', '진', '운', '동', '희')
+
+names <- c()
+set.seed(100) 
+
+for(i in 1:100) {
+  mid_idx <- sample(1:7, 1)
+  last_idx <- sample(1:7, 1)
+  
+  name <- paste(mid[mid_idx], last[last_idx], sep="")
+  names <- c(names, name)
+}
+set.seed(100)
+korean = sample(60:100, 100, replace=TRUE)
+english = sample(60:100, 100, replace=TRUE)
+math = sample(60:100, 100, replace=TRUE)
+nums = c(1001:1100)
+
+sts <- data.frame(nums, names, korean, english, math)
+
+colnames(sts) <- c("번호", "이름", "국어", "영어", "수학")
+
+options(dplyr.print_max = 1000000)
+
+## 그룹핑을 하기 위해 지역 데이터 생성
+locations = c('서울', '대전', '대구', '부산', '울산', '광주', '인천')
+set.seed(10)
+idx <- sample(1:7, 100, replace=TRUE)
+sts$지역 <- locations[idx]
+
+sts %>%
+  mutate(평균=(수학+영어+국어) / 3 ) %>%
+  arrange(desc(평균)) -> sts2
+
+sts2$공부시간 <- sort(round(abs(rnorm(100, 5, 2))), decreasing = TRUE)
+sts2$수학 <- unlist(sts2 %>% arrange(desc(수학)) %>% select(수학))
+
+sts2 %>% arrange(번호) -> sts
