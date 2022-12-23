@@ -1,0 +1,451 @@
+library(dplyr)
+library(ggplot2)
+library(gt)
+library(reshape2)
+
+getwd()
+
+# 2017 ~ 2021 파일 로드해서 데이터프레임으로 저장 - 인코딩에 대한 개념
+df2 <- read.csv("data/apartment_price2.csv")
+
+
+# 상위 5개만 확인해보기
+
+head(df2, n=5) %>% gt()
+
+# 하위 5개만 확인해보기
+
+tail(df2, n=5) %>% gt()
+
+
+# 2015 ~ 2016 파일 로드해서 데이테프레임으로 저장
+df1 <- read.csv("data/apartment_price1.csv")
+
+# 상위 5개 확인
+head(df1, n=5) %>% gt()
+
+# 하위 5개 확인
+tail(df1, n=5) %>% gt()
+
+# 데이터 요약하기 - str
+str(df2)
+str(df1)
+
+
+# 결측치 확인 -> 누락된 데이터. NA
+sum(is.na(df2))
+
+
+# 평당분양가격 구하기 
+# 1평 -> 3.3제곱미터
+df2$분양가격.제곱미터. 
+
+
+# 타입변환
+# 문자 > 숫자
+as.numeric(df2$분양가격.제곱미터.)
+
+df2$평당분양가격 <- as.numeric(df2$분양가격.제곱미터.) * 3.3
+
+df2
+
+# 결측치 확인
+sum(is.na(df2$평당분양가격))
+
+# 결측치 -> 처리
+# 1. 결측치가 포함된 행을 제거
+# 2. 결측치가 포함된 열을 제거
+# 3. 결측치를 특정 값으로 치환
+
+
+# 규모구분을 전용면적으로 바꾸고 데이터 용량 줄이기
+# ~60, 60 ~ 85, 85 ~ 102, 102~, 전체
+head(df2, n=1)
+unique(df2$규모구분)
+
+# 전용면적 => "" (v)
+# 제곱미터초과 => ~ (v)
+# 제곱미터이하 => "" (v)
+# 모든면적 => "전체" (v)
+
+tmp <- gsub("전용면적", "", df2$규모구분)
+
+tmp <- gsub("제곱미터초과", " ~", tmp)  
+
+tmp <- gsub("제곱미터이하", "", tmp)  
+
+tmp <- gsub("모든면적", "전체", tmp)  
+
+df2$전용면적 <- tmp
+
+head(df2) %>% gt()
+
+# 사용하지 않는 컬럼은 제거하고 사용하는 컬럼만 가져오기
+df3 <- df2 %>% 
+  select(-X, -규모구분, -분양가격.제곱미터.)
+#  slice_head(n=5) %>% gt()
+
+df3 %>% gt()
+
+
+# 메모리 사용량 확인 - object.size(df)
+object.size(df2$규모구분)
+object.size(df2$전용면적)
+
+# 전용면적별 평당분양가격의 평균 구하기
+df3 %>% 
+  group_by(전용면적) %>%
+  summarise(평균분양가격=mean(평당분양가격))
+
+
+# 결측치 처리
+
+
+df3 <- df3 %>%
+  filter(!is.na(평당분양가격))
+
+
+# 전용면적별 평당분양가격의 평균 구하기
+df3 %>% 
+  group_by(전용면적) %>%
+  summarise(평균분양가격=mean(평당분양가격))
+
+
+
+# 지역명, 전용면적으로 평당분양가격의 평균 구하기
+df3 %>% 
+  group_by(지역명, 전용면적) %>%
+  summarise(평균분양가격=mean(평당분양가격)) %>% gt()
+
+
+# 연도, 지역명으로 평당분양가격의 평균 구하기
+df3 %>% 
+  group_by(연도, 지역명) %>%
+  summarise(평균분양가격=mean(평당분양가격)) %>% gt()
+
+
+options(scipen=999)
+
+# 연도별 분양가격의 평균을 구하고 선그래프로 시각화
+df4 <- df3 %>% 
+  group_by(연도) %>%
+  summarise(평균분양가격=mean(평당분양가격))
+
+ggplot(df4, aes(x=연도, y=평균분양가격)) +
+  geom_line(color="purple", size=3)
+
+
+# 지역명으로 분양가격의 평균을 구하고 막대그래프로 시각화
+df5 <- df3 %>% 
+  group_by(지역명) %>%
+  summarise(평균분양가격=mean(평당분양가격))
+
+ggplot(df5, aes(x=지역명, y=평균분양가격)) + 
+  geom_bar(stat = "identity")
+
+
+
+# 전용면적으로 분양가격의 평균을 구하고 막대그래프로 시각화
+df6 <- df3 %>% 
+  group_by(전용면적) %>%
+  summarise(평균분양가격=mean(평당분양가격))
+
+
+ggplot(df6, aes(x=전용면적, y=평균분양가격)) + 
+  geom_bar(stat = "identity")
+
+
+df7 <- df3 %>% 
+  group_by(지역명, 전용면적) %>%
+  summarise(평균분양가격=mean(평당분양가격))
+
+ggplot(df7, aes(x=전용면적, y=평균분양가격, fill=지역명)) +
+  geom_bar(stat="identity", color="black")
+
+ggplot(df7, aes(x=지역명, y=평균분양가격, fill=전용면적)) +
+  geom_bar(stat="identity", color="black")
+
+# 연도별 평당분양가격 박스플롯으로 시각화
+# 범주형 데이터를 대상으로 그릴 때 유용
+ggplot(df4, aes(x=연도, y=평균분양가격)) +
+  geom_boxplot()
+
+str(df4)
+
+# 범주형 데이터 -> factor
+v1 <- c(1,2,3,1,2,3,1,2)
+f1 <- factor(c(1,2,3,1,2,3,1,2))
+f1
+
+df4$연도범주 <- as.factor(df4$연도)
+
+df3$연도범주 <- as.factor(df3$연도)
+
+df3
+
+ggplot(df3, aes(x=연도범주, y=평당분양가격, color=연도범주)) +
+  geom_jitter() + geom_boxplot(alpha=0.5)
+
+
+# reshape2 - dcast, melt
+
+# df1(2015~2016) df3(2017~2021) 두 데이터 프레임을 이용해서
+# df1은 각 지역의 기간별 평균평당분양가격 정보를 나타냄.
+
+# 2015~2021년까지의 각 지역별 평당분양가격을 나타내는
+# 데이터프레임을 만들어주세요.
+
+# 데이터프레임은 아래와 같이 나오게 해주시면 됩니다.
+# [지역명, 연도, 월, 평당분양가격]
+
+# 힌트1. 
+# 두 데이터프레임 모두 [지역명, 연도, 월, 평당분양가격] 구조로 만들기
+
+df4 <- df1 %>% 
+  select(-X)
+
+df5 <- melt(df4, id.vars = "지역명")
+
+
+# 힌트2.
+# 연월은 필요하면 문자열 함수를 이용해 구분.
+
+parse_year <- function(str) {
+  tmp <- sub("X", "", str)
+  tmp <- unlist(strsplit(tmp, "년"))[1]
+  rst <- as.integer(tmp)
+  return(rst)
+}
+
+parse_month <- function(str) {
+  tmp <- unlist(strsplit(str, "년"))[2]
+  tmp <- sub("월", "", tmp)
+  rst <- as.integer(tmp)
+  return(rst)
+}
+
+df5$variable <- as.character(df5$variable)
+
+df5$연도 <- sapply(df5$variable, parse_year)
+df5$월 <- sapply(df5$variable, parse_month)
+
+colnames(df5) <- c("지역명", "aaa", "평당분양가격", "연도", "월")
+
+df6 <- df5 %>% 
+  select(-aaa)
+
+# 합차기 전에 
+df_15_16 <- df6
+df_17_21 <- df3
+
+df_15_16
+df_17_21 <- df_17_21 %>% 
+  filter(전용면적 == "전체") %>%
+  select(지역명, 평당분양가격, 연도, 월)
+
+str(df_15_16)
+str(df_17_21)
+
+# 4. 합치기
+data <- rbind(df_15_16, df_17_21)
+
+
+# 분석 및 시각화
+# 막대(bar) -> 이산(범주)데이터와 연속(수치)데이터의 관계 확인
+# 각 평당분양가격의 합산
+ggplot(data, aes(x=지역명, y=평당분양가격)) +
+  geom_bar(stat="identity")
+
+# 각 지역별 평균평당분양가격.
+ggplot(data, aes(x=지역명, y=평당분양가격)) +
+  geom_bar(stat="summary", fun=mean)
+
+# 각 지역별 최대평당분양가격
+ggplot(data, aes(x=지역명, y=평당분양가격)) +
+  geom_bar(stat="summary", fun=max)
+
+# 문제1. 막대그래프를 이용해서 연도별 평균 평당분양가격 그리기.
+ggplot(data, aes(x=as.factor(연도), y=평당분양가격)) +
+  geom_bar(stat="summary", fun=mean)
+
+
+# 문제2. 막대그래프를 이용해서 연도별 평균 평당분양가격 그리기. (지역별로 구분)
+ggplot(data, aes(x=as.factor(연도), y=평당분양가격, fill=지역명)) +
+  geom_bar(stat="summary", fun=mean, color="black")
+
+# =================================================================
+# point_plot, line_plot ( 산점도, 선그래프)
+# 연속(수치)데이터와 연속(수치) 데이터의 관계
+ggplot(data, aes(x=연도, y=평당분양가격)) +
+  geom_point() +
+  geom_line()
+
+ggplot(data, aes(x=연도, y=평당분양가격)) +
+  geom_point(stat="summary", fun=mean) +
+  geom_line(stat="summary", fun=mean)
+
+
+# 문제1. 산점도로 연도별 최대 평당분양가격 그리기
+ggplot(data, aes(x=연도, y=평당분양가격)) +
+  geom_point(stat="summary", fun=max)
+
+
+# 문제2. 산점도와 선그래프로 연도별 평균 평당분양가격과 최대 평당분양가격 그리기
+ggplot(data, aes(x=연도, y=평당분양가격)) +
+  geom_point(stat="summary", fun=max) +
+  geom_point(stat="summary", fun=mean) +
+  geom_line(stat="summary", fun=max, color="red", size=1) +
+  geom_line(stat="summary", fun=mean, color="blue", size=1)
+
+
+ggplot(data, aes(x=연도, y=평당분양가격)) +
+  geom_point()
+
+# =================================================================
+# 그래프 확대 및 간격 조절(자세히 보기)
+p1 <- ggplot(data, aes(x=연도, y=평당분양가격, color=지역명)) 
+
+p1 + geom_line(stat="summary", fun=mean)
+
+# 단순 확대
+p1 +
+  coord_cartesian(xlim=c(2016, 2018), ylim=c(0, 10000)) +
+  geom_line(stat="summary", fun=mean)
+
+p1 +
+  geom_line(stat="summary", fun=mean)
+
+# 간격 조절(자세히 보기)
+p1 + 
+  scale_x_continuous(limits=c(2018, 2019), breaks=c(2018, 2019), labels=c(2018, 2019)) +
+  scale_y_continuous(limits=c(10000, 11000), breaks=c(seq(10000, 11000, 100)), labels = c(seq(10000, 11000, 100))) +
+
+  geom_line(stat="summary", fun=mean)
+
+
+# 문제1. 2019 ~ 2021년 사이의 14000 ~ 16000 사이의 값을 200 간격으로 확대
+p1 + 
+  scale_x_continuous(limits=c(2019, 2021), breaks=c(2019, 2020, 2021), labels=c(2019, 2020, 2021)) +
+  scale_y_continuous(limits=c(14000, 16000), breaks=c(seq(14000, 16000, 200)), labels = c(seq(14000, 16000, 200))) +
+  geom_line(stat="summary", fun=mean)
+
+# =================================================================
+# facet - 여러개 그리기(그래프 분리하기), 범주별 그래프를 나눠서 보고 싶을 때,
+
+p1 + geom_line(stat="summary") +
+  facet_grid(~지역명)
+
+
+p1 + geom_line(stat="summary") +
+  facet_grid(지역명~.)
+
+p1 + geom_line(stat="summary") +
+  facet_wrap(vars(지역명), ncol = 4, scales="free")
+
+
+# 문제1. 연도별 평균 평당분양가격을 
+#        막대그래프로 그리고 지역별로 facet하여 따로 보여주세요.
+#         서브플롯 열의 개수는 3으로 해주세요.
+
+ggplot(data, aes(x=as.factor(연도), y=평당분양가격, fill=지역명)) +
+  geom_bar(stat="summary", fun=mean) +
+  facet_wrap(vars(지역명), ncol=3, scales="free")
+
+# ===============================================================
+# jitter -> 수치와 범주 데이터의 관계를 점으로 표현
+
+ggplot(data, aes(x=지역명, y=평당분양가격)) +
+  geom_jitter()
+
+# box plot -> jitter를 좀더 자세히
+ggplot(data, aes(x=지역명, y=평당분양가격)) +
+  geom_boxplot() +
+  geom_jitter()
+
+ggplot(data, aes(x=as.factor(연도), y=평당분양가격, fill=지역명)) +
+  geom_boxplot() +
+  facet_wrap(vars(지역명), ncol=3, scales="free")
+
+
+# violin plot -> box plot에서 데이터 분포까지 확인 가능
+ggplot(data, aes(x=지역명, y=평당분양가격, fill=지역명)) +
+  geom_jitter() +
+  geom_boxplot(alpha=0.3) +
+  geom_violin(alpha=0.7)
+
+
+# 문제1. 지역별 평당 분양 가격을 박스플롯으로 그려주세요
+ggplot(data, aes(x=지역명, y=평당분양가격, fill=지역명)) +
+  geom_jitter() +
+  geom_boxplot(alpha=0.7)
+
+
+# 문제2. 연도별 평당 분양 가격을 바이올린 플롯으로 그려주세요
+ggplot(data, aes(x=지역명, y=평당분양가격, fill=as.factor(연도))) +
+  geom_jitter() +
+  geom_violin(alpha=0.7)
+
+# 문제3. 지역별 평당 분양 가격을 바이올린 플롯으로 그려주세요.
+ggplot(data, aes(x=지역명, y=평당분양가격, fill=지역명)) +
+  geom_jitter() +
+  geom_violin(alpha=0.7)
+
+
+# 회귀선(추세선)
+ggplot(data, aes(x=연도, y=평당분양가격, color=as.factor(지역명))) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(vars(as.factor(지역명)), scales="free")
+
+
+
+# ================================================================================
+# 수치데이터의 빈도수 - 히스토그램 (막대그래프 형태)
+ggplot(data, aes(x=평당분양가격)) +
+  #geom_histogram(binwidth = 3000, color="black")
+  scale_x_continuous(limits=c(0, 50000), breaks = seq(0, 50000, 2500),
+                     labels = seq(0, 50000, 2500)) +
+  geom_histogram(bins = 20, color="black") +
+  theme(
+    axis.text.x = element_text(angle = 70)
+  )
+
+# 수치데이터의 빈도수 - 밀도함수
+ggplot(data, aes(x=평당분양가격)) +
+  #geom_histogram(binwidth = 3000, color="black")
+  scale_x_continuous(limits=c(0, 50000), breaks = seq(0, 50000, 2500),
+                     labels = seq(0, 50000, 2500)) +
+  geom_density()
+
+# 지역별 평당분양가격을 density
+ggplot(data, aes(x=평당분양가격, fill=지역명)) +
+  geom_density() +
+  facet_wrap(vars(지역명), ncol=5, scales="free")
+
+# ===========================================================
+# rug
+ggplot(data, aes(x=평당분양가격)) +
+  #geom_histogram(binwidth = 3000, color="black")
+  scale_x_continuous(limits=c(0, 50000), breaks = seq(0, 50000, 2500),
+                     labels = seq(0, 50000, 2500)) +
+  geom_histogram(bins = 20, color="black") +
+  theme(
+    axis.text.x = element_text(angle = 70)
+  ) +
+  geom_rug()
+
+# =========================================================
+ggplot(data, aes(x=평당분양가격)) +
+  geom_histogram(aes(y=..density..), bins = 20, color="black") +
+  geom_density(color="red", fill="red", alpha=0.3) +
+  theme(
+    axis.text.x = element_text(angle = 70)
+  ) +
+  geom_rug()
+
+# ==========================================================
+## 히트맵 -> 변수간 상관관계를 시각화
+
+## 지역, 평당분양가격 관계
+ggplot(data, aes(x=지역명, y=as.factor(연도), fill=평당분양가격)) +
+  geom_tile()
