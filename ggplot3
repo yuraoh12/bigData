@@ -1,0 +1,65 @@
+options(scipen=999)
+
+# 연도별 분양가격의 평균을 구하고 선그래프로 시각화
+df4 <- df3 %>% 
+  group_by(연도) %>%
+  summarise(평균분양가격=mean(평당분양가격))
+
+ggplot(df4, aes(x=연도, y=평균분양가격)) +
+  geom_line(color="purple", size=3)
+
+
+# 지역명으로 분양가격의 평균을 구하고 막대그래프로 시각화
+df5 <- df3 %>% 
+  group_by(지역명) %>%
+  summarise(평균분양가격=mean(평당분양가격))
+
+ggplot(df5, aes(x=지역명, y=평균분양가격)) + 
+  geom_bar(stat = "identity")
+
+
+
+# 전용면적으로 분양가격의 평균을 구하고 막대그래프로 시각화
+df6 <- df3 %>% 
+  group_by(전용면적) %>%
+  summarise(평균분양가격=mean(평당분양가격))
+
+
+ggplot(df6, aes(x=전용면적, y=평균분양가격)) + 
+  geom_bar(stat = "identity")
+
+
+df7 <- df3 %>% 
+  group_by(지역명, 전용면적) %>%
+  summarise(평균분양가격=mean(평당분양가격))
+
+ggplot(df7, aes(x=전용면적, y=평균분양가격, fill=지역명)) +
+  geom_bar(stat="identity", color="black")
+
+ggplot(df7, aes(x=지역명, y=평균분양가격, fill=전용면적)) +
+  geom_bar(stat="identity", color="black")
+
+# 연도별 평당분양가격 박스플롯으로 시각화
+# 범주형 데이터를 대상으로 그릴 때 유용
+ggplot(df4, aes(x=연도, y=평균분양가격)) +
+  geom_boxplot()
+
+str(df4)
+
+# 범주형 데이터 -> factor
+v1 <- c(1,2,3,1,2,3,1,2)
+f1 <- factor(c(1,2,3,1,2,3,1,2))
+f1
+
+df4$연도범주 <- as.factor(df4$연도)
+
+df3$연도범주 <- as.factor(df3$연도)
+
+df3
+
+ggplot(df3, aes(x=연도범주, y=평당분양가격, color=연도범주)) +
+  geom_jitter() + geom_boxplot(alpha=0.5)
+
+
+# reshape2 - dcast, melt
+
