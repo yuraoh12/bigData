@@ -1,0 +1,257 @@
+# 필요한 라이브러리 불러오기
+library(dplyr)
+library(gt)
+#library(reshape2)
+library(ggplot2)
+
+# 필요한 데이터 로드
+
+df1 <- read.csv("data/store_daejeon_202209.csv")
+df2 <- read.csv("data/store_seoul_202209.csv")
+
+
+# 데이터 확인을 위해 위에서 5개, 밑에서 5개 미리 보기
+head(df1)
+tail(df1)
+
+# 데이터 프레임의 차원 정보 확인
+dim(df1)
+dim(df2)
+
+# 컬럼이름 확인
+colnames(df1) == colnames(df2)
+identical(colnames(df1), colnames(df2))
+
+df3 <- rbind(df1, df2)
+
+dim(df3)
+
+
+# 각 컬럼의 데이터 타입 확인
+str(df3)
+
+
+# 데이터 프레임의 전체 결측치의 개수 확인
+sum(is.na(df3))
+
+# 각 컬럼별로 결측치의 개수 확인
+n <-colSums(is.na(df3))
+
+
+# 각 컬럼별 결측치를 막대그래프로 그려주세요.
+colnames(df3)
+n
+ndf <- data.frame(col=colnames(df3), na_cnt=n)
+
+rownames(ndf) <- NULL
+
+ggplot(ndf, aes(x=reorder(col, na_cnt), y=na_cnt)) +
+  geom_bar(stat="identity") +
+  theme(
+    axis.text.x = element_text(angle=80)
+  ) + coord_flip()
+
+
+# 결측치가 많은 컬럼을 처리하기
+# 1. 결측기가 포함된 컬럼 또는 행을 제거
+# 2. 결측치의 값을 특정 값(평균, 중앙값, 0 등등)으로 교체
+# 3. 결측치가 포함된 값을 범주화
+
+# 1번 방식으로 해결
+
+del_target <- ndf %>% 
+  arrange(desc(na_cnt)) %>%
+  slice_head(n=3) %>%
+  select(col)
+
+unlist(del_target)
+
+df4 <- df3 %>%
+  select(-unlist(del_target))
+
+# 결측치 수 확인
+
+
+# 번호, 코드가 들어간 컬럼을 제외하기
+## grepl
+### grepl(포함여부가 궁금한 문자열, 대상) -> 포함 TRUE, 아니면 FALSE
+### grepl 사용 예시
+grepl("ab", "abc")
+grepl("aa", c("abc", "aab", "aac", "abb"))
+
+colnames <- colnames(df4)
+
+## 논리값 인덱싱 예시
+v1 <- c(1,2,3,4)
+v1[c(T,F,T,F)]
+
+## 컬럼명에 번호가 포함되어있거나, 코드가 포함되어 있으면 가져오기
+del_target <- colnames[grepl("번호", colnames(df4)) | grepl("코드", colnames(df4))]
+
+## 해당 컬럼 삭제
+df5 <- df4 %>%
+  select(-del_target)
+
+# 차원 수 확인
+dim(df3)
+dim(df4)
+
+
+# 컬럼명 확인
+colnames(df4)
+setdiff(colnames(df3), colnames(df4))
+
+# 데이터 미리보기
+head(df4)
+tail(df4)
+
+# 통계 관련 집계 함수 사용해보기
+## 위도와 경도의
+
+## 1. 평균
+cat(mean(df4$위도), mean(df4$경도))
+
+## 2. 분산(variance)
+## (관측값 - 평균)^2
+cat(var(df4$위도), var(df4$경도))
+
+## 3. 표준편차(standard deviation) -> sd
+## sqrt(분산)
+cat(sd(df4$위도), sd(df4$경도))
+
+## 4. 1사분위
+quantile(df4$위도, probs = 0.25)
+
+## 5. 2사분위
+quantile(df4$위도, probs = 0.5)
+
+## 6. 중앙값
+median(df4$위도)
+
+## 7. 최대/최소
+cat(max(df4$위도), min(df4$위도))
+
+## 8. 최대값 위치/ 최소값 위치
+cat(which.max(df4$위도), which.min(df4$위도))
+
+
+# =====================================================================
+# 상관관계(피어슨 상관 계수)
+# cor(df) -> df의 각 변수들 간의 상관계수를 구해줌. 단 여기서 df는 모두 수치형 데이터여야 함
+# ggcorrplot() -> 상관계수를 히트맵으로 시각화해줌
+# 지번본번지, 건물본번지, 경도, 위도 각 변수별 상관계수 구하기 
+df5 <- df4 %>%
+  select(-del_target)
+
+
+
+df6 <- df5 %>% 
+  select(지번본번지, 건물본번지, 경도, 위도)
+
+c <- cor(df6)
+
+c
+# 지번본번지, 건물본번지, 경도, 위도 각 변수별 상관관계를 시각화
+install.packages("ggcorrplot")
+library(ggcorrplot)
+ggcorrplot(c, colors=c("white", "light blue", "dark blue"), lab=T)
+
+dim(df6)[1]
+
+idx <- sample(1:dim(df5)[1], 1000)
+
+sample_df <- df5[idx, ] 
+
+# 산점도로 경도와 위도 표현 (x = 경도, y = 위도)
+ggplot(sample_df, aes(x=경도, y=위도)) +
+  geom_point()
+
+
+# 경도와 위도 간의 산점도와 회귀선 그리기
+ggplot(sample_df, aes(x=경도, y=위도)) +
+  geom_point() +
+  geom_smooth(method="lm")
+
+
+
+# 각 지역별 산점도와 회귀선을 서브플롯으로 그리기
+ggplot(sample_df, aes(x=경도, y=위도, color=시도명)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  facet_wrap(vars(시도명), scales="free")
+
+# 서울의 음식점을 중분류 기준으로 빈도수 구하고 가장 많은 음식 분류로 내림차순하여 막대그래프로 보여주기
+
+colnames(df5)
+head(df5, n=3)
+
+## 대분류의 카테고리 확인
+unique(df5$상권업종대분류명)
+
+## 대분류가 음식인 것만 추리기
+food_df <- df5 %>%
+  filter(상권업종대분류명 == "음식")
+
+## 중분류 카테고리 확인
+unique(food_df$상권업종중분류명)
+
+
+## 서울시의 음식점 중분류 빈도수 -> 막대그래프
+
+food_df %>%
+  group_by(상권업종중분류명) %>%
+  summarise(cnt=n()) %>%
+  ggplot(aes(x=reorder(상권업종중분류명, cnt), y=cnt, fill=상권업종중분류명)) +
+  geom_bar(stat="identity") +
+  #theme(
+  #  axis.text.x = element_text(angle = 80)
+  #)
+  coord_flip()
+
+# 서울의 각 구별 학원수
+unique(df5$상권업종대분류명)
+
+edu_df <- df5 %>%
+  filter(시도명=="서울특별시", 상권업종대분류명 == "학문/교육")
+
+
+# 각 구별로 학원수 막대그래프로
+edu_df %>% 
+  group_by(시군구명) %>%
+  summarise(cnt = n()) %>%
+  arrange(desc(cnt)) %>%
+  ggplot(aes(x=reorder(시군구명, cnt), y=cnt)) +
+  geom_bar(stat="identity") +
+  coord_flip()
+
+
+# 각 구별 학원수 막대그래프를 서브플롯으로
+edu_df %>% 
+  group_by(시군구명) %>%
+  summarise(cnt = n()) %>%
+  arrange(desc(cnt)) %>%
+  ggplot(aes(x=reorder(시군구명, cnt), y=cnt, fill=시군구명)) +
+  geom_bar(stat="identity") +
+  coord_flip()
+
+# 각 구별 학원수 상권업종소분류명으로 빈도수 구하고 위에서 30개만 보기
+edu_df %>% 
+  group_by(시군구명, 상권업종소분류명) %>%
+  summarise(cnt = n()) %>%
+  arrange(desc(cnt)) %>%
+  slice_head(n=30) %>% 
+  gt()
+
+
+
+# 샘플 5000개만 뽑기
+head(df5, n=1)
+idx2 <- sample(1:dim(df5)[1], 5000)
+tmp_df5 <- df5[idx2,]
+
+# 위경도로 서울 시군구 산점도로 표현
+tmp_df5 %>% 
+  filter(시도명 == "서울특별시") %>%
+  ggplot(aes(x=경도, y=위도, color=시군구명)) +
+  geom_point()
+
