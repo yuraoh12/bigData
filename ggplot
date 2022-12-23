@@ -1,0 +1,53 @@
+# 필요한 라이브러리 불러오기
+library(dplyr)
+library(gt)
+library(reshape2)
+library(ggplot2)
+
+# 필요한 데이터 로드
+
+df1 <- read.csv("data/store_daejeon_202209.csv")
+df2 <- read.csv("data/store_seoul_202209.csv")
+
+
+# 데이터 확인을 위해 위에서 5개, 밑에서 5개 미리 보기
+head(df1)
+tail(df1)
+
+# 데이터 프레임의 차원 정보 확인
+dim(df1)
+dim(df2)
+
+# 컬럼이름 확인
+colnames(df1) == colnames(df2)
+identical(colnames(df1), colnames(df2))
+
+df3 <- rbind(df1, df2)
+
+dim(df3)
+
+
+# 각 컬럼의 데이터 타입 확인
+str(df3)
+
+
+# 데이터 프레임의 전체 결측치의 개수 확인
+sum(is.na(df3))
+
+# 각 컬럼별로 결측치의 개수 확인
+n <-colSums(is.na(df3))
+
+
+# 각 컬럼별 결측치를 막대그래프로 그려주세요.
+colnames(df3)
+n
+ndf <- data.frame(col=colnames(df3), na_cnt=n)
+
+rownames(ndf) <- NULL
+
+ggplot(ndf, aes(x=reorder(col, na_cnt), y=na_cnt)) +
+  geom_bar(stat="identity") +
+  theme(
+    axis.text.x = element_text(angle=80)
+  ) + coord_flip()
+
