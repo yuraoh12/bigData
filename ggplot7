@@ -1,0 +1,33 @@
+# 공부시간에 따른 수학점수를 산점도와 선프래프로 표현
+p <- ggplot(sts, aes(x=공부시간, y=수학))
+p + geom_line()
+p + geom_line(aes(color=지역))
+
+
+
+# 남녀별 평균점수 막대그래프로 표현.
+sts2 <- sts %>%
+  group_by(성별) %>%
+  summarise(평균=mean(평균))
+
+
+p2 <- ggplot(sts2, aes(x=성별, y=평균))
+p2 + geom_bar(stat="identity")
+
+
+# 지역별 학생수를 막대그래프로 표현. 남녀별로 색 구분
+p3 <- ggplot(sts, aes(x=지역, fill=성별))
+p3 + geom_bar()
+
+p3 + geom_bar(position="dodge")
+
+# 평균점수대별 학생 분포를 박스플롯으로 표현
+sts3 <- sts %>%
+  mutate(점수대=평균 %/% 10 * 10) 
+
+
+sts3$점수대 <- as.factor(sts3$점수대)
+
+  
+p4 <- ggplot(sts3, aes(x=점수대, y=평균, color=점수대))
+p4 + geom_boxplot() + geom_jitter()
