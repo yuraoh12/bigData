@@ -1,0 +1,87 @@
+library(dplyr)
+
+getwd()
+
+setwd(getwd())
+
+fish <- read.csv("data/Fish.xlsx")
+
+#install.packages("readxl")
+library(readxl)
+library(ggplot2)
+
+# Fish 데이터 준비
+fish <- read_excel("data/Fish.xlsx")
+fish
+
+# 물고기 어종 확인
+unique(fish$Species)
+
+# 각 컬럼명 확인
+colnames(fish)
+
+# 간단한 테스트를 위해 2개의 종류만 뽑아서 진행
+fish %>% 
+  arrange(desc(Weight))
+
+# 어종 별 빈도수 -> 적당히 빈도수가 있으면서 서로 구별되는 데이터를 취함.
+ggplot(fish, aes(x=Species)) +
+  geom_bar()
+
+
+# Smelt와 Bream 데이터만 취함
+my_data <- fish %>% 
+  filter(Species == "Smelt" | Species == "Bream")
+
+
+# 어종별 산점도 시각화
+ggplot(my_data, aes(x=Length1, y=Weight, color=Species)) +
+  geom_point(size=3) +
+  geom_point(x=25, y=150, size=5, color="blue")
+
+# KNN 모델 패키지 설치
+# install.packages("FNN")
+
+
+# 라이브러리 추가
+library(FNN)
+
+
+# 학습데이터 만들기 (기계가 학습할 문제지(모의고사))
+trd <- my_data %>% 
+  select(Weight, Length1)
+
+# 정답데이터 만들기 (기계가 학습한 문제지의 답안지)
+trt <- my_data %>% 
+  select(Species)
+
+trd # train_data
+trt # train_target
+
+# 예측하고자 하는 데이터(풀어야하는 수능 문제(본고사))
+tsd <- data.frame(Weight=150, Length1=25) # test data
+
+# KNN 모델 학습
+# knn 함수를 사용. 함수의 파라미터 의미는 아래와 같음
+# knn(학습데이터(모의고사), 문제지(본고사), 답안지(모의고사 답안지), 찾고자 하는 이웃수)
+km <- knn(trd, tsd, unlist(trt), k=5) # 예측 결과를 다양한 정보로 제공. 이를 km 변수에 저장
+
+# 결과 -> 예측 결과
+# nn.index -> 이웃의 위치(인덱스)
+# nn.dist -> 최근접 이웃의 거리
+nn_idx <- attr(km, "nn.index") # 예측 결과 중 다섯 이웃의 인덱스 정보를 얻어옴
+ 
+nn <- trd[nn_idx[1,], ] # 인덱스로 다섯 이웃을 선택
+
+
+# 다섯 이웃을 그래프에 시각화하여 확인
+ggplot(my_data, aes(x=Length1, y=Weight, color=Species)) +
+  geom_point(size=3) +
+  geom_point(x=25, y=150, size=5, color="blue") +
+  geom_point(data = nn, aes(x=Length1, y=Weight), color="red", size=5, shape=4)
+
+# 테스트 데이터는 그래프상으로는 Bream에 가깝지만 KNN은 실제로 Smelt라고 예측함.
+# 이는 그래프 상의 두 변수의 축 간격이 서로 달라서 생긴일.
+# 두 변수간의 기준을 맞춰줘야 함. -> 정규화 / 표준화
+
+
