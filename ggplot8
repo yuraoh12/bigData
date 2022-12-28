@@ -1,0 +1,145 @@
+library(dplyr)
+
+getwd()
+
+setwd(getwd())
+
+fish <- read.csv("data/Fish.xlsx")
+
+#install.packages("readxl")
+library(readxl)
+library(ggplot2)
+
+fish <- read_excel("data/Fish.xlsx")
+fish
+
+# KNN 분류
+unique(fish$Species)
+colnames(fish)
+
+
+fish %>% 
+  arrange(desc(Weight))
+
+my_data <- fish %>% 
+  filter(Species == "Smelt" | Species == "Bream")
+  
+
+ggplot(fish, aes(x=Species)) +
+  geom_bar()
+
+
+ggplot(my_data, aes(x=Length1, y=Weight, color=Species)) +
+  geom_point(size=3) +
+  geom_point(x=25, y=150, size=5, color="blue")
+
+# KNN 모델
+# install.packages("FNN")
+
+library(FNN)
+
+# 학습할 문제지(모의고사)
+trd <- my_data %>% 
+  select(Weight, Length1)
+
+# 학습한 문제지의 답안지
+trt <- my_data %>% 
+  select(Species)
+
+dim(trd)
+
+trd # train_data
+trt # train_target
+
+# 풀어야하는 수능 문제(본고사)
+tsd <- data.frame(Weight=150, Length1=25) # test data
+
+
+# 평균, 사분위값 을 이용해서 분석. -> 기술
+# 기존의 데이터를 바탕으로 새로운 문제를 예측
+
+# KNN 모델
+# knn(학습데이터(모의고사), 문제지(본고사), 답안지(모의고사 답안지), 찾고자 하는 이웃수)
+km <- knn(trd, tsd, unlist(trt), k=5)
+
+# nn.index -> 이웃의 위치(인덱스)
+# nn.dist -> 최근접 이웃의 거리
+
+km
+
+nn_idx <- attr(km, "nn.index")
+
+
+ 
+nn <- trd[nn_idx[1,], ]
+
+
+# 데이터를 시각화
+ggplot(my_data, aes(x=Length1, y=Weight, color=Species)) +
+  geom_point(size=3) +
+  geom_point(x=25, y=150, size=5, color="blue") +
+  geom_point(data = nn, aes(x=Length1, y=Weight), color="red", size=5, shape=4)
+
+
+# 두 변수간의 기준을 맞춰줘야 함. -> 정규화 / 표준화
+# 정규화 함수
+normalizer <- function(x) {
+    tmp_num <- x - min(x)
+    rst <- tmp_num / (max(x) - min(x))
+    return (rst)
+}
+
+# 각 컬럼의 값을 정규화
+w <- my_data$Weight
+l <- my_data$Length1
+
+lapply(as.data.frame(w), normalizer)
+lapply(as.data.frame(l), normalizer)
+
+# 특정 컬럼을 정해서 한번에 정규화
+normal_target <- my_data %>% 
+  select(Weight, Length1)
+
+# sapply는 list데이터를 받아 list의 모든 요소에 대해 함수를 적용시킨다
+no_data <- as.data.frame(sapply(normal_target, normalizer))
+
+no_data$Species <- my_data$Species
+
+# 기존의 데이터는 정규화 했지만 테스트 데이터인 길이 25, 무게 150인 물고기 데이터는 정규화가 안되어 있다.
+ggplot(no_data, aes(x=Length1, y=Weight, color=Species)) +
+  geom_point(size=3) +
+  geom_point(x=25, y=150, size=5, color="blue") 
+  #geom_point(data = nn, aes(x=Length1, y=Weight), color="red", size=5, shape=4)
+
+# 무게 150, 길이 25인 생선을 정규화
+# 필요한 것. 정규화 기준이 되는 데이터셋(my_data), 정규화 하고자 하는 단일 샘플(list(Length1=25, Weight=150))
+# my_data로 정규화된 분포에서 샘플이 차지하는 위치를 알 수 있음.
+normalize_one <- function(x, y) {
+  tmp_num <- y - min(x)
+  rst <- tmp_num / (max(x) - min(x))
+  return (rst)
+}
+
+# 단일 샘플 list 형변환
+sample <- list(Weight=150, Length1=25)
+
+# mapply는 function의 매개변수가 여러개일 때 사용
+no_sam <- mapply(normalize_one, normal_target, sample)
+no_sam
+
+no_data2 <- no_data %>% 
+  select(-Species)
+
+# 정규화된 데이터셋과 테스트 데이터로 KNN 학습
+knn_rst <- knn(no_data2, no_sam, unlist(trt), k=5)
+
+no_idx <- attr(knn_rst, "nn.index")[1,]
+
+no_nn <- no_data[idx, ]
+
+# 시각화
+ggplot(no_data, aes(x=Length1, y=Weight, color=Species)) +
+  geom_point(size=3) +
+  geom_point(x=no_sam[2], y=no_sam[1], size=5, color="blue") +
+  geom_point(data = no_nn, aes(x=Length1, y=Weight), color="red", size=5, shape=4)
+
