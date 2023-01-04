@@ -1,0 +1,26 @@
+## Petal.Length=6.3, Petal.Width=3.7을 정규화 해야 한다.
+## 단일 샘플에 대한 정규화 함수
+normalize_one <- function(x, y) {
+  if(max(x) <= y) {
+    y <- max(x)
+  }
+  tmp_num <- y - min(x)
+  rst <- tmp_num / (max(x) - min(x))
+  return (rst)
+}
+
+## 학습용 변수는 Petal.Length와 Petal.Width 이므로 두 변수만 따로 뽑아 정규화 기준 데이터셋으로 사용.
+library(dplyr)
+petal_data <- iris_nm %>% 
+  select(Petal.Length, Petal.Width)
+petal_data
+
+## 정규화할 단일 샘플을 list로 확보
+sample <- list(Petal.Length=6.3, Petal.Width=3.7)
+
+## 정규화 기준 데이터셋 petal_data와 단일 샘플 sample로 정규화 진행 
+nsample <- mapply(normalize_one, petal_data, sample)
+
+## 정규화된 샘플 데이터를 knn으로 예측
+kn_rst2 <- knn(trd, nsample, trt, k=5)
+kn_rst2
