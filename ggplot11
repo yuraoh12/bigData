@@ -1,0 +1,60 @@
+# 필요한 라이브러리 로드
+library(dplyr)
+library(ggplot2)
+library(gmodels)
+library(readxl)
+
+# 학습 데이터 로드
+fish <- read_excel("data/Fish.xlsx")
+
+# 데이터 탐색 및 시각화
+fish %>% ggplot(aes(x=Species)) +
+  geom_bar()
+
+my_data <- fish[fish$Species == "Perch", c("Weight", "Length1")]
+
+my_data %>%
+  ggplot(aes(x=Length1, y=Weight)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+
+# KNN 회귀
+## 회귀 -> 연속형데이터(수치) 변수들 간의 관계를 파악하고 예측
+## KNN 회귀 -> 타겟의 이웃 n개의 평균값으로 예측
+
+# 정규화
+normalizer <- function(x) {
+  tmp_num <- x - min(x)
+  rst <- tmp_num / (max(x) - min(x))
+  return (rst)
+}
+ndata <- as.data.frame(lapply(my_data, normalizer))
+ndata
+
+
+# 학습데이터, 테스트데이터 자르기
+sample_key <- sample(2, nrow(ndata), replace=T, prob=c(0.7, 0.3))
+#sample(3, 100, replace=T, prob=c(0.5, 0.3, 0.2))
+sample_key
+
+trd <- ndata[, "Length1"][sample_key == 1]
+tsd <- ndata[, "Length1"][sample_key == 2]
+
+trt <- ndata[, "Weight"][sample_key == 1]
+tst <- ndata[, "Weight"][sample_key == 2]
+trt
+
+# 학습 및 평가
+## knn 회귀로 데이터 예측
+knnr <- knn.reg(train=as.data.frame(trd), test=as.data.frame(tsd), y=as.data.frame(trt), k=5)
+
+## 실제 데이터와 비교하기 위한 예측데이터 시각화용 데이터 프레임 생성
+pdf <- data.frame(Length1=tsd, Weight=knnr$pred)
+
+# 시각화
+ndata %>% 
+  ggplot(aes(x=Length1, y=Weight)) + # 실제 데이터 분포
+  geom_point(size=3, color="blue") +
+  geom_point(data=pdf, aes(x=Length1, y=Weight), size=3, color="red") # 예측 데이터 분포
+
