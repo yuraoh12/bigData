@@ -1,0 +1,45 @@
+install.packages("caret")
+library(caret)
+# knn 회귀의 단점을 극복하기 위해 선형회귀
+## 선형회귀 모델을 이용해 예측
+## train -> 학습
+lm1 <- train(Weight ~ Length1, data=my_data, method="lm")
+lm1
+
+# 분류 평가 - precision, recall, accuracy, f1-score
+# 회귀 평가 - 
+## RMSE -> 모든 샘플의 오차의 합을 제곱해서 평균낸 후 제곱근 
+###  - 오차의 민감도가 높아서 정확도는 높일 수 있는데, 이상치에 약하다.
+## Rsquared -> 1 -(예측과 실제값이 차이 예측과 평균값의 차이 비율)
+###  - 얼마나 회귀선이 실제 데이터와 비슷한가
+## MAE -> 모든 샘플의 오차의 절대값의 합의 평균
+###  - 오차의 민감도가 상대적으로 낮아 정확도는 다소 낮을 수 있는데, 이상치에 강하다.
+
+
+# predict - 예측하기
+
+predict(lm1, sam1) # 937
+predict(lm1, sam2) # 1326 
+predict(lm1, sam3) # 3271 
+
+lm_fn <- function(x) {
+  y = 38.911 * x - 619.175
+  return(y)
+}
+
+# 시각화로 확인
+my_data %>% 
+  ggplot(aes(x=Length1, y=Weight)) +
+  scale_x_continuous(limits=c(0, 100)) +
+  scale_y_continuous(limits=c(-400, 3500)) +
+  geom_point(size=3, color="blue") +
+  geom_smooth(method="lm") +
+  geom_point(x=40, y=937, size=3, color="red") +
+  geom_point(x=50, y=1326, size=3, color="red") + 
+  geom_point(x=100, y=3271, size=3, color="red") +
+  stat_function(data=my_data, fun = lm_fn, size=1, color="darkblue")
+# 직선 -> 1차 함수 -> y = ax + b (intercept = 절편, coefficient = 계수(기울기))
+
+
+summary(lm1)
+# y = 38 * Length1 - 619
