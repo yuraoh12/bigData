@@ -1,0 +1,52 @@
+# 다항 회귀 -> 2차식을 이용한 회귀선 찾기
+# y = ax^2 + bx + c
+# x는 길이
+
+my_data$Length2 <- my_data$Length1 ** 2
+
+my_data
+
+lm2 <- train(Weight~Length1 + Length2, data=my_data, method="lm")
+summary(lm2)
+
+lm_fn2 <- function(x) {
+  y <- 1.1651 * (x ** 2) -23.6726 * x + 135.9136
+  return (y)
+}
+
+## 
+ggplot(data=my_data, aes(x=Length1, Weight)) +
+  geom_point(size=3, color="blue") +
+  stat_function(fun=lm_fn, size=1, color="darkblue") +
+  stat_function(fun=lm_fn2, size=1, color="orange")
+
+
+sam4 <- my_data[c(25,26,27,28,29), ]
+
+tdata <- data.frame(Length1=sam4$Length1)
+tdata2 <- data.frame(Length1=sam4$Length1, Length2=sam4$Length2)
+
+pred1 <- predict(lm1, tdata)
+pred2 <- predict(lm2, tdata2)
+
+typeof(pred1)
+typeof(pred2)
+
+tdf1 <- data.frame(Length1=sam4$Length1, Weight=pred1)
+tdf2 <- data.frame(Length1=sam4$Length1, Weight=pred2)
+
+
+
+ggplot(data=my_data, aes(x=Length1, Weight)) +
+  geom_point(size=3, color="blue") +
+  stat_function(fun=lm_fn, size=1, color="darkblue") +
+  stat_function(fun=lm_fn2, size=1, color="orange") +
+  geom_point(data=tdf1, aes(x=Length1, y=Weight), color="red", size=3) +
+  geom_point(data=tdf2, aes(x=Length1, y=Weight), color="darkgreen", size=3) +
+  coord_cartesian(xlim = c(15, 30), ylim = c(0, 700))
+
+# 데이터 전처리 - 정규화, 피처 엔지니어링
+# 하이퍼 파라미터 튜닝 - 학습에 관여하는 여러가지 값
+## ex) knn -> 이웃의 개수 k
+## ex2) 선형회귀 -> 적합한 파라미터를 찾기 위해 반복해야하는 횟수
+## ex3) 과대적합, 과소적합 해결
