@@ -1,0 +1,38 @@
+
+
+# =================================================================
+# 그래프 확대 및 간격 조절(자세히 보기)
+p1 <- ggplot(data, aes(x=연도, y=평당분양가격, color=지역명)) 
+
+p1 + geom_line(stat="summary", fun=mean)
+
+# 그래프 유지
+p1 +
+  coord_cartesian(xlim=c(2016, 2018), ylim=c(0, 10000)) +
+  geom_line(stat="summary", fun=mean)
+
+p1 +
+  geom_line(stat="summary", fun=mean)
+
+# 그래프 재조정
+p1 + 
+  scale_x_continuous(limits=c(2018, 2019), breaks=c(2018, 2019), labels=c(2018, 2019)) +
+  scale_y_continuous(limits=c(10000, 11000), breaks=c(seq(10000, 11000, 100)), labels = c(seq(10000, 11000, 100))) +
+
+  geom_line(stat="summary", fun=mean)
+
+
+# 문제1. 2019 ~ 2021년 사이의 14000 ~ 16000 사이의 값을 200 간격으로 확대
+
+# =================================================================
+# facet - 여러개 그리기(그래프 분리하기), 범주별 그래프를 나눠서 보고 싶을 때,
+
+p1 + geom_line(stat="summary") +
+  facet_grid(~지역명)
+
+
+p1 + geom_line(stat="summary") +
+  facet_grid(지역명~.)
+
+p1 + geom_line(stat="summary") +
+  facet_wrap(vars(지역명), ncol = 4, scales="free")
